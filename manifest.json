@@ -1,0 +1,28 @@
+{
+  "name": "Transcritor Ministerial — Rev. Renan",
+  "short_name": "Transcritor",
+  "description": "Transcrição de pregações e livros cristãos em português",
+  "start_url": "/transcritor-livros/",
+  "scope": "/transcritor-livros/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#7a1c1c",
+  "background_color": "#f5ede0",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/twemoji/books.svg?width=192&height=192",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://api.iconify.design/twemoji/books.svg?width=512&height=512",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": []
+}
