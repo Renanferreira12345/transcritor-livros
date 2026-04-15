@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#7a1c1c"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Transcritor"/>
+<title>Transcritor — Rev. Renan</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #1a1208;
+  --parchment: #f5ede0;
+  --gold: #c9952a;
+  --red-deep: #7a1c1c;
+  --cream: #fdf8f0;
+  --shadow: rgba(26,18,8,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  display: flex;
+  flex-direction: column;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(201,149,42,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(122,28,28,0.06) 0%, transparent 60%);
+}
+
+/* HEADER */
+header {
+  background: var(--red-deep);
+  color: white;
+  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+}
+header .icon { font-size: 1.5rem; }
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+header h1 span { color: var(--gold); font-style: italic; }
+header p { font-size: 0.72rem; opacity: 0.75; letter-spacing: 0.05em; margin-top: 2px; }
+
+/* MAIN SCROLL AREA */
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* RECORD CARD */
+.record-card {
+  background: var(--cream);
+  border: 1px solid rgba(201,149,42,0.35);
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 20px var(--shadow);
+}
+
+.record-btn {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 3px solid var(--red-deep);
+  background: var(--red-deep);
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px rgba(122,28,28,0.35);
+  transition: transform 0.15s;
+  -webkit-appearance: none;
+}
+.record-btn:active { transform: scale(0.94); }
+.record-btn.recording { animation: pulse 1.2s ease-out infinite; background: #a01c1c; }
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(122,28,28,0.5); }
+  70%  { box-shadow: 0 0 0 16px rgba(122,28,28,0); }
+  100% { box-shadow: 0 0 0 0 rgba(122,28,28,0); }
+}
+
+.record-label {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  color: var(--red-deep);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.timer {
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  display: none;
+}
+
+.waveform {
+  display: flex; align-items: center; gap: 3px; height: 28px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.waveform.active { opacity: 1; }
+.waveform span {
+  display: block; width: 4px;
+  background: var(--gold); border-radius: 2px;
+  animation: wave 0.9s ease-in-out infinite;
+}
+.waveform span:nth-child(1){height:8px;animation-delay:0s}
+.waveform span:nth-child(2){height:18px;animation-delay:.1s}
+.waveform span:nth-child(3){height:24px;animation-delay:.2s}
+.waveform span:nth-child(4){height:18px;animation-delay:.3s}
+.waveform span:nth-child(5){height:12px;animation-delay:.4s}
+.waveform span:nth-child(6){height:22px;animation-delay:.15s}
+.waveform span:nth-child(7){height:16px;animation-delay:.25s}
+@keyframes wave {
+  0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.8)}
+}
+
+/* TRANSCRIPT CARD */
+.transcript-card {
+  background: var(--cream);
+  border: 1px solid rgba(201,149,42,0.35);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--shadow);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(201,149,42,0.2);
+  background: rgba(201,149,42,0.07);
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: var(--red-deep);
+}
+.card-actions { display: flex; gap: 6px; }
+
+.btn-sm {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 4px;
+  border: 1px solid;
+  cursor: pointer;
+  font-weight: 500;
+  -webkit-appearance: none;
+}
+.btn-copy  { border-color: var(--gold); color: var(--gold); background: transparent; }
+.btn-clear { border-color: #c0a080; color: #c0a080; background: transparent; }
+.btn-dl    { border-color: var(--red-deep); color: var(--red-deep); background: transparent; }
+.btn-copy:active  { background: var(--gold); color: white; }
+.btn-clear:active { background: #c0a080; color: white; }
+.btn-dl:active    { background: var(--red-deep); color: white; }
+
+.thinking {
+  display: none; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  font-style: italic; color: var(--gold); font-size: 0.9rem;
+}
+.thinking.show { display: flex; }
+.dots span {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--gold); border-radius: 50%; margin: 0 2px;
+  animation: blink 1.2s ease-in-out infinite;
+}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+#transcript-box {
+  flex: 1;
+  width: 100%; padding: 16px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem; line-height: 1.8;
+  color: var(--ink); border: none; background: transparent;
+  resize: none; outline: none;
+}
+#transcript-box::placeholder { color: #bfaa90; font-style: italic; }
+
+/* HISTORY */
+.history-card {
+  background: var(--cream);
+  border: 1px solid rgba(201,149,42,0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+#history-list { list-style: none; max-height: 180px; overflow-y: auto; }
+#history-list li {
+  display: flex; gap: 10px; padding: 10px 16px;
+  border-bottom: 1px solid rgba(201,149,42,0.1);
+  font-size: 0.9rem; line-height: 1.5; cursor: pointer;
+}
+#history-list li:active { background: rgba(201,149,42,0.08); }
+.ts {
+  font-size: 0.68rem; color: var(--gold);
+  letter-spacing: 0.07em; text-transform: uppercase;
+  white-space: nowrap; margin-top: 3px; font-weight: 500;
+}
+.excerpt { color: var(--ink); opacity: 0.82; flex: 1; }
+.history-empty {
+  padding: 18px; text-align: center;
+  font-style: italic; color: #bfaa90; font-size: 0.9rem;
+  display: block;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--red-deep); color: white;
+  padding: 10px 22px; border-radius: 20px;
+  font-size: 0.9rem; box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  opacity: 0; transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none; z-index: 999; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon">📖</div>
+  <div>
+    <h1>Transcritor <span>Ministerial</span></h1>
+    <p>Rev. Renan Ferreira da Silva</p>
+  </div>
+</header>
+
+<main>
+  <!-- GRAVAR -->
+  <div class="record-card">
+    <button class="record-btn" id="recordBtn">🎙️</button>
+    <div class="waveform" id="waveform">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="timer" id="timer">00:00</div>
+    <div class="record-label" id="recordLabel">Toque para gravar</div>
+  </div>
+
+  <!-- TRANSCRIÇÃO -->
+  <div class="transcript-card">
+    <div class="card-header">
+      <h2>✍️ Transcrição</h2>
+      <div class="card-actions">
+        <button class="btn-sm btn-copy" onclick="copyText()">Copiar</button>
+        <button class="btn-sm btn-dl" onclick="downloadText()">Baixar</button>
+        <button class="btn-sm btn-clear" onclick="clearText()">Limpar</button>
+      </div>
+    </div>
+    <div class="thinking" id="thinking">
+      <span>Transcrevendo</span>
+      <span class="dots"><span></span><span></span><span></span></span>
+    </div>
+    <textarea id="transcript-box" placeholder="Grave sua mensagem e o texto aparecerá aqui…"></textarea>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="history-card">
+    <div class="card-header">
+      <h2>📜 Histórico</h2>
+      <button class="btn-sm btn-clear" onclick="clearHistory()">Limpar</button>
+    </div>
+    <ul id="history-list">
+      <li style="border:none"><span class="history-empty">Nenhuma gravação ainda.</span></li>
+    </ul>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(console.error);
+}
+
+let mediaRecorder=null, audioChunks=[], isRecording=false;
+let timerInterval=null, elapsedSecs=0;
+
+const recordBtn   = document.getElementById('recordBtn');
+const waveform    = document.getElementById('waveform');
+const timerEl     = document.getElementById('timer');
+const recordLabel = document.getElementById('recordLabel');
+const thinkingEl  = document.getElementById('thinking');
+const txBox       = document.getElementById('transcript-box');
+
+recordBtn.addEventListener('click', () => isRecording ? stopRecording() : startRecording());
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks  = [];
+    const mime   = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : '';
+    mediaRecorder = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = handleStop;
+    mediaRecorder.start(250);
+    isRecording=true;
+    recordBtn.textContent='⏹️'; recordBtn.classList.add('recording');
+    recordLabel.textContent='Gravando… toque para parar';
+    waveform.classList.add('active');
+    timerEl.style.display='block'; elapsedSecs=0; updateTimer();
+    timerInterval=setInterval(updateTimer,1000);
+  } catch(e) { showToast('Erro: permita o microfone.'); }
+}
+
+function stopRecording() {
+  mediaRecorder.stop();
+  mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  isRecording=false; clearInterval(timerInterval);
+  recordBtn.textContent='🎙️'; recordBtn.classList.remove('recording');
+  recordLabel.textContent='Toque para gravar';
+  waveform.classList.remove('active');
+}
+
+function updateTimer() {
+  elapsedSecs++;
+  const m=String(Math.floor(elapsedSecs/60)).padStart(2,'0');
+  const s=String(elapsedSecs%60).padStart(2,'0');
+  timerEl.textContent=`${m}:${s}`;
+}
+
+async function handleStop() {
+  timerEl.style.display='none';
+  thinkingEl.classList.add('show');
+  const mime=audioChunks[0]?.type||'audio/webm';
+  const blob=new Blob(audioChunks,{type:mime});
+
+  // Tenta Web Speech API (nativa, funciona offline no Android Chrome)
+  const SpeechRec = window.SpeechRecognition||window.webkitSpeechRecognition;
+  if (SpeechRec) {
+    await useSpeechAPI(blob);
+  } else {
+    await useAnthropicAPI(blob, mime);
+  }
+}
+
+function useSpeechAPI(blob) {
+  return new Promise(resolve => {
+    const url   = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    const SR    = window.SpeechRecognition||window.webkitSpeechRecognition;
+    const rec   = new SR();
+    rec.lang='pt-BR'; rec.continuous=true; rec.interimResults=false;
+    let collected='';
+    rec.onresult = e => {
+      for(let i=e.resultIndex;i<e.results.length;i++)
+        if(e.results[i].isFinal) collected+=e.results[i][0].transcript+' ';
+    };
+    rec.onend = async () => {
+      URL.revokeObjectURL(url);
+      if(collected.trim()) await correctWithClaude(collected.trim());
+      else { thinkingEl.classList.remove('show'); showToast('Não captei áudio. Tente novamente.'); }
+      resolve();
+    };
+    rec.onerror = () => { thinkingEl.classList.remove('show'); showToast('Erro no reconhecimento.'); resolve(); };
+    audio.play().catch(()=>{});
+    audio.onended = () => { try{rec.stop();}catch(e){} };
+    rec.start();
+  });
+}
+
+async function correctWithClaude(rawText) {
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`Você é revisor de livros cristãos em português brasileiro. Corrija gramática, pontuação e ortografia sem alterar o significado. Organize em parágrafos para publicação. Preserve citações bíblicas e termos teológicos. Retorne apenas o texto corrigido.\n\nTEXTO: ${rawText}`}]
+      })
+    });
+    const d=await r.json();
+    const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    appendText(text||rawText);
+    addHistory(text||rawText);
+    showToast('Transcrição concluída!');
+  } catch(e) {
+    appendText(rawText); addHistory(rawText);
+    showToast('Texto salvo (sem correção).');
+  } finally { thinkingEl.classList.remove('show'); }
+}
+
+async function useAnthropicAPI(blob, mime) {
+  const base64 = await blobToBase64(blob);
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'text',text:'Transcreva o áudio em português brasileiro correto, organizado em parágrafos para publicação de livro cristão. Retorne apenas o texto.'},
+          {type:'document',source:{type:'base64',media_type:mime,data:base64}}
+        ]}]
+      })
+    });
+    const d=await r.json();
+    const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+    if(text){ appendText(text); addHistory(text); showToast('Transcrição concluída!'); }
+    else showToast('Não foi possível transcrever.');
+  } catch(e) { showToast('Erro de conexão. Tente novamente.'); }
+  finally { thinkingEl.classList.remove('show'); }
+}
+
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej; r.readAsDataURL(blob);
+  });
+}
+
+function appendText(text) {
+  const cur=txBox.value.trim();
+  txBox.value=cur?cur+'\n\n'+text:text;
+  txBox.scrollTop=txBox.scrollHeight;
+}
+
+function addHistory(text) {
+  const timeStr=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const excerpt=text.length>70?text.substring(0,70)+'…':text;
+  const empty=document.querySelector('.history-empty');
+  if(empty) empty.closest('li').remove();
+  const li=document.createElement('li');
+  li.innerHTML=`<span class="ts">${timeStr}</span><span class="excerpt">${excerpt}</span>`;
+  li.addEventListener('click',()=>{ appendText(text); showToast('Adicionado à transcrição.'); });
+  document.getElementById('history-list').prepend(li);
+}
+
+function copyText(){
+  const t=txBox.value.trim();
+  if(!t){showToast('Nenhum texto.');return;}
+  navigator.clipboard.writeText(t).then(()=>showToast('Copiado!'));
+}
+
+function downloadText(){
+  const t=txBox.value.trim();
+  if(!t){showToast('Nenhum texto.');return;}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));
+  a.download=`transcricao_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click(); showToast('Arquivo baixado!');
+}
+
+function clearText(){
+  if(!txBox.value.trim())return;
+  if(confirm('Limpar toda a transcrição?')){ txBox.value=''; showToast('Limpo.'); }
+}
+
+function clearHistory(){
+  document.getElementById('history-list').innerHTML='<li style="border:none"><span class="history-empty">Nenhuma gravação ainda.</span></li>';
+  showToast('Histórico limpo.');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
